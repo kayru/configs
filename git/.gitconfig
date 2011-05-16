@@ -1,0 +1,12 @@
+[user]
+	email = yuriyo@gmail.com
+	name = Yuriy O'Donnell
+
+[color]
+	ui = true
+
+[alias]
+	lol = log --pretty=oneline --abbrev-commit --graph --decorate
+
+[fetch]
+	recurseSubmodules = true
