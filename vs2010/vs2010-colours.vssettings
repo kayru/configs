@@ -55,7 +55,7 @@
 					<Category GUID="{A27B4E24-A735-4D1D-B8E7-9716E1E3D8E0}" FontIsDefault="Yes">
 						<Items>
 							<Item Name="Plain Text" Foreground="0x00F0F8F8" Background="0x00222827" BoldFont="No"/>
-							<Item Name="Selected Text" Foreground="0x00F2F8F8" Background="0x003E4849" BoldFont="No"/>
+							<Item Name="Selected Text" Foreground="0x00F2F8F8" Background="0x00AD72BA" BoldFont="No"/>
 							<Item Name="Line Numbers" Foreground="0x005E7175" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Visible White Space" Foreground="0x00353535" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Brace Matching (Highlight)" Foreground="0x000065FD" Background="0x02000000" BoldFont="No"/>
