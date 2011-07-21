@@ -72,10 +72,19 @@ PS1="\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\n
 #####################################################################
 
 # make ls nicer
+
+UNAME=`uname`
+
+if [ "$UNAME" == "Darwin" ]; then
+    export TERM=xterm-color
+    alias ls='ls -G'
+else
+    alias ls='ls --color=auto'    
+fi
+
 alias l='ls -CF'
 alias la='ls -A'
 alias ll='ls -alF'
-alias ls='ls --color=auto'
 
 #####################################################################
 #####################################################################
