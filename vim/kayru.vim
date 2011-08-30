@@ -1,6 +1,11 @@
 syn on
 
-set gfn=Consolas:h11
+if has("mac")
+	set gfn=Menlo:h11
+elseif has("win32")
+	set gfn=Consolas:h11
+endif
+
 set tabstop=4
 set bs=2
 set nu
