@@ -1,3 +1,5 @@
+set t_Co=256
+
 syn on
 
 if has("mac")
