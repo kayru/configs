@@ -60,7 +60,7 @@ set history=1000
 set undolevels=1000
 
 " don't beep
-set visualbell  
+" set visualbell  
 
 " don't beep
 set noerrorbells
