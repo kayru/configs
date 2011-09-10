@@ -78,7 +78,13 @@ set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 " set nice colour scheme
 color molokai
 
-" easy mode
-behave mswin
+" easy mode in gvim
+if has("gui_running")
+	behave mswin
+end
+
+" setup status line
+set laststatus=2
+set statusline=%t\ %y\ format:\ %{&ff};\ [%c,%l]
 
 
