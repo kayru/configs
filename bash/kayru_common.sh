@@ -4,13 +4,6 @@
 #####################################################################
 #####################################################################
 
-# If not running interactively, don't do anything
-[[ "$-" != *i* ]] && return
-
-#####################################################################
-#####################################################################
-#####################################################################
-
 # show current git branch (as per http://railstips.org/blog/archives/2009/02/02/bedazzle-your-bash-prompt-with-git-info/)
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
