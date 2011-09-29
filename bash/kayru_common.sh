@@ -4,13 +4,19 @@
 #####################################################################
 #####################################################################
 
+UNAME=`uname`
+
 # show current git branch (as per http://railstips.org/blog/archives/2009/02/02/bedazzle-your-bash-prompt-with-git-info/)
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
   echo "("${ref#refs/heads/}") "
 }
 
-PS1="\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$ "
+if [ "$UNAME" == "FreeBSD" ]; then
+	PS1="\u@\h \w $ "
+else
+	PS1="\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$ "
+fi
 
 #####################################################################
 #####################################################################
@@ -18,9 +24,7 @@ PS1="\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$
 
 # make ls nicer
 
-UNAME=`uname`
-
-if [ "$UNAME" == "Darwin" ]; then
+if [ "$UNAME" == "Darwin" -o "$UNAME" == "FreeBSD" ]; then
     export TERM=xterm-color
     alias ls='ls -G'
 else
