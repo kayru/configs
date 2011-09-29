@@ -20,7 +20,7 @@ PS1="\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$
 
 UNAME=`uname`
 
-if [ "$UNAME" == "Darwin" ]; then
+if [ "$UNAME" == "Darwin" -o "$UNAME" == "FreeBSD" ]; then
     export TERM=xterm-color
     alias ls='ls -G'
 else
