@@ -15,7 +15,7 @@ function parse_git_branch {
 if [ "$UNAME" == "FreeBSD" ]; then
 	PS1="\u@\h \w $ "
 else
-	PS1="\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$ "
+	PS1="\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$ "
 fi
 
 #####################################################################
