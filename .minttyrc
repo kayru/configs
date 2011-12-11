@@ -1,0 +1,13 @@
+BoldAsFont=no
+Columns=115
+Rows=64
+FontHeight=11
+Font=Consolas
+ScrollbackLines=10000
+Term=xterm-256color
+BackgroundColour=13,23,32
+ForegroundColour=200,220,200
+BoldAsColour=yes
+FontSmoothing=default
+Transparency=off
+OpaqueWhenFocused=no
