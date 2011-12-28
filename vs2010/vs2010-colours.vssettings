@@ -56,6 +56,7 @@
 						<Items>
 							<Item Name="Plain Text" Foreground="0x00F0F8F8" Background="0x00222827" BoldFont="No"/>
 							<Item Name="Selected Text" Foreground="0x00F2F8F8" Background="0x00AD72BA" BoldFont="No"/>
+							<Item Name="Inactive Selected Text" Foreground="0x02000000" Background="0x00800000" BoldFont="No"/>
 							<Item Name="Line Numbers" Foreground="0x005E7175" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Visible White Space" Foreground="0x00353535" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Brace Matching (Highlight)" Foreground="0x000065FD" Background="0x02000000" BoldFont="No"/>
@@ -93,6 +94,7 @@
 							<Item Name="Current Statement (new context)" Foreground="0x00EFD966" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Definition Window Background" Foreground="0x01000002" Background="0x00F2F8F8" BoldFont="No"/>
 							<Item Name="Definition Window Current Match" Foreground="0x00F2F8F8" Background="0x02000000" BoldFont="No"/>
+							<Item Name="MarkerFormatDefinition/HighlightedReference" Foreground="0x02000000" Background="0x00364E34" BoldFont="No"/>
 							<Item Name="HTML Attribute" Foreground="0x002EE2A6" Background="0x02000000" BoldFont="No"/>
 							<Item Name="HTML Attribute Value" Foreground="0x0074DBE6" Background="0x02000000" BoldFont="No"/>
 							<Item Name="HTML Comment" Foreground="0x005E7175" Background="0x02000000" BoldFont="No"/>
@@ -118,6 +120,12 @@
 							<Item Name="Script Number" Foreground="0x00FF81AE" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Script Operator" Foreground="0x007226F9" Background="0x02000000" BoldFont="No"/>
 							<Item Name="Script String" Foreground="0x0074DBE6" Background="0x003E4849" BoldFont="No"/>
+							<Item Name="Shader Language - Identifier" Foreground="0x002D52A0" Background="0x02000000" BoldFont="No"/>
+							<Item Name="Shader Language - Intrinsic" Foreground="0x000080FF" Background="0x02000000" BoldFont="Yes"/>
+							<Item Name="Shader Language - Keyword" Foreground="0x00EFD966" Background="0x02000000" BoldFont="No"/>
+							<Item Name="Shader Language - Number" Foreground="0x00FF81AE" Background="0x02000000" BoldFont="No"/>
+							<Item Name="Shader Language - Special" Foreground="0x002D52A0" Background="0x02000000" BoldFont="No"/>
+							<Item Name="Shader Language - String" Foreground="0x0074DCE6" Background="0x02000000" BoldFont="No"/>
 							<Item Name="SQL DML Marker" Foreground="0x002EE2A6" Background="0x02000000" BoldFont="No"/>
 							<Item Name="SQL Operator" Foreground="0x007226F9" Background="0x02000000" BoldFont="No"/>
 							<Item Name="SQL Stored Procedure" Foreground="0x002EE2A6" Background="0x02000000" BoldFont="No"/>
