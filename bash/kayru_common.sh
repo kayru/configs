@@ -30,10 +30,17 @@ alias ll='ls -alF'
 
 # completion stuff
 
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+# homebrew bash completion
+if [ "$UNAME" == "Darwin" ] && [ -f `brew --prefix`/etc/bash_completion ]; then	
+    . `brew --prefix`/etc/bash_completion	
+else
+	if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
+	fi
 fi
 
 # Auto-complete ssh commands
 
 complete -W "$(echo $(grep '^ssh ' ~/.bash_history | sort -u | sed 's/^ssh //'))" ssh
+
+
