@@ -40,7 +40,7 @@ else
 fi
 
 # Auto-complete ssh commands
-
 complete -W "$(echo $(grep '^ssh ' ~/.bash_history | sort -u | sed 's/^ssh //'))" ssh
 
-
+# Auto-complete premake
+complete -W "xcode4 vs2010 gmake clean" premake4
