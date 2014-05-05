@@ -1,0 +1,18 @@
+ZSH=$HOME/.oh-my-zsh
+ZSH_THEME="af-magic"
+
+plugins=(git osx brew extract virtualenv)
+
+source $ZSH/oh-my-zsh.sh
+
+PATH=~/bin:/usr/local/bin:~/QtSDK/Desktop/Qt/4.8.1/gcc/bin:$PATH
+export PATH
+
+source ~/configs/bash/dir_colors.sh
+
+alias ls='gls --color=auto'
+alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+
+DISABLE_UPDATE_PROMPT=true
