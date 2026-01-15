@@ -225,22 +225,34 @@ _cmc__list_targets() {
   builddir="${info%%|*}"
 
   if [[ -n "$builddir" && -f "$builddir/build.ninja" && -n ${commands[ninja]} ]]; then
-    ninja -C "$builddir" -t targets 2>/dev/null | sed -n 's/^\([^:][^:]*\):.*/\1/p'
+    ninja -C "$builddir" -t targets 2>/dev/null | \
+      sed -n 's/^\([^:][^:]*\):.*/\1/p' | \
+      grep -v '\.' | \
+      grep -v '^CMakeFiles' | \
+      grep -v '/' | \
+      grep -v '^_' | \
+      grep -v '^\(all\|clean\|install\|test\|help\|depend\|edit_cache\|rebuild_cache\)$'
     return 0
   fi
 
   if [[ -n "$builddir" && -f "$builddir/Makefile" && -n ${commands[make]} ]]; then
-    make -C "$builddir" help 2>/dev/null | sed -n 's/^\([A-Za-z0-9_.-][A-Za-z0-9_.-]*\):.*/\1/p'
+    make -C "$builddir" help 2>/dev/null | \
+      sed -n 's/^\([A-Za-z0-9_-][A-Za-z0-9_-]*\):.*/\1/p' | \
+      grep -v '^\(all\|clean\|install\|test\|help\|depend\|edit_cache\|rebuild_cache\)$'
     return 0
   fi
 
   if [[ -n ${commands[cmake]} && -n "$preset" ]]; then
-    cmake --build --preset "$preset" --target help 2>/dev/null | sed -n 's/^\([A-Za-z0-9_.-][A-Za-z0-9_.-]*\):.*/\1/p'
+    cmake --build --preset "$preset" --target help 2>/dev/null | \
+      sed -n 's/^\([A-Za-z0-9_-][A-Za-z0-9_-]*\):.*/\1/p' | \
+      grep -v '^\(all\|clean\|install\|test\|help\|depend\|edit_cache\|rebuild_cache\)$'
     return 0
   fi
 
   if [[ -n "$builddir" && -n ${commands[cmake]} ]]; then
-    cmake --build "$builddir" --target help 2>/dev/null | sed -n 's/^\([A-Za-z0-9_.-][A-Za-z0-9_.-]*\):.*/\1/p'
+    cmake --build "$builddir" --target help 2>/dev/null | \
+      sed -n 's/^\([A-Za-z0-9_-][A-Za-z0-9_-]*\):.*/\1/p' | \
+      grep -v '^\(all\|clean\|install\|test\|help\|depend\|edit_cache\|rebuild_cache\)$'
   fi
 }
 
@@ -369,7 +381,7 @@ _cmbr() {
 
 _cmc_complete() {
   local state
-  _arguments '1:preset:->presets' && return
+  _arguments '1:preset:->presets' && return 0
   case "$state" in
     presets)
       local -a presets matches
@@ -378,13 +390,14 @@ _cmc_complete() {
       if (( ${#matches[@]} > 0 )); then
         _describe 'configure preset' matches
       fi
+      return 0
       ;;
   esac
 }
 
 _cmb_complete() {
   local state
-  _arguments '1:preset:->presets' '2:target:->targets' && return
+  _arguments '1:preset:->presets' '2:target:->targets' '*::args:->args' && return 0
   case "$state" in
     presets)
       local -a presets matches
@@ -393,21 +406,27 @@ _cmb_complete() {
       if (( ${#matches[@]} > 0 )); then
         _describe 'build preset' matches
       fi
+      return 0
       ;;
     targets)
+      local preset
+      preset="$(_cmc__resolve_preset build "$words[2]")" || return 1
       local -a targets matches
-      targets=(${(f)"$(_cmc__list_targets "$words[2]")"})
+      targets=(${(f)"$(_cmc__list_targets "$preset")"})
       matches=(${(f)"$(_cmc__fuzzy_filter "$PREFIX" "${targets[@]}")"})
       if (( ${#matches[@]} > 0 )); then
         _describe 'build target' matches
       fi
+      return 0
+      ;;
+    args)
+      return 0
       ;;
   esac
 }
 
 _cmr_complete() {
-  local state
-  _arguments '1:preset:->presets' '2:target:->targets' '*:args: _files' && return
+  local state:args:->args' && return 0
   case "$state" in
     presets)
       local -a presets matches
@@ -416,21 +435,23 @@ _cmr_complete() {
       if (( ${#matches[@]} > 0 )); then
         _describe 'build preset' matches
       fi
+      return 0
       ;;
     targets)
+      local preset
+      preset="$(_cmc__resolve_preset build "$words[2]")" || return 1
       local -a targets matches
-      targets=(${(f)"$(_cmc__list_targets "$words[2]")"})
+      targets=(${(f)"$(_cmc__list_targets "$preset")"})
       matches=(${(f)"$(_cmc__fuzzy_filter "$PREFIX" "${targets[@]}")"})
       if (( ${#matches[@]} > 0 )); then
         _describe 'build target' matches
       fi
+      return 0
       ;;
-  esac
-}
-
-_cmbr_complete() {
-  local state
-  _arguments '1:preset:->presets' '2:target:->targets' '*:args: _files' && return
+    args)
+      _files
+      return 0_describe 'build target' matches
+      fi:args:->args' && return 0
   case "$state" in
     presets)
       local -a presets matches
@@ -439,10 +460,25 @@ _cmbr_complete() {
       if (( ${#matches[@]} > 0 )); then
         _describe 'build preset' matches
       fi
+      return 0
       ;;
     targets)
+      local preset
+      preset="$(_cmc__resolve_preset build "$words[2]")" || return 1
       local -a targets matches
-      targets=(${(f)"$(_cmc__list_targets "$words[2]")"})
+      targets=(${(f)"$(_cmc__list_targets "$preset")"})
+      matches=(${(f)"$(_cmc__fuzzy_filter "$PREFIX" "${targets[@]}")"})
+      if (( ${#matches[@]} > 0 )); then
+        _describe 'build target' matches
+      fi
+      return 0
+      ;;
+    args)
+      _files
+      return 0cal preset
+      preset="$(_cmc__resolve_preset build "$words[2]")" || return 1
+      local -a targets matches
+      targets=(${(f)"$(_cmc__list_targets "$preset")"})
       matches=(${(f)"$(_cmc__fuzzy_filter "$PREFIX" "${targets[@]}")"})
       if (( ${#matches[@]} > 0 )); then
         _describe 'build target' matches
