@@ -18,3 +18,5 @@ alias ll='ls -alhF'
 DISABLE_UPDATE_PROMPT=true
 
 autoload -U compinit && compinit
+
+source ~/configs/zsh/plugins/cmake-workflow/cmake-workflow.plugin.zsh
