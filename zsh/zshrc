@@ -1,7 +1,7 @@
 ZSH=$HOME/.oh-my-zsh
 ZSH_THEME="af-magic"
 
-plugins=(git macos brew extract virtualenv cargo rust zsh-completions)
+plugins=(git macos brew extract virtualenv rust zsh-completions)
 
 source $ZSH/oh-my-zsh.sh
 
