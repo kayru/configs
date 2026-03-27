@@ -80,6 +80,26 @@ _cmc__build_info() {
   python3 "$_CMC_PLUGIN_DIR/build_info.py" "$dir" "$preset"
 }
 
+# List executable targets for a preset (for run commands)
+_cmc__list_executable_targets() {
+  local preset="$1" info builddir
+  info="$(_cmc__build_info "$preset")" || return 0
+  builddir="${info%%|*}"
+  [[ -n "$builddir" && -f "$builddir/build.ninja" ]] || {
+    _cmc__list_targets "$preset"
+    return
+  }
+  awk '
+    /EXECUTABLE_LINKER/ { sub(/^build /, ""); sub(/:.*/, ""); exe[$0]=1 }
+    /: phony / {
+      line=$0; sub(/^build /, "", line)
+      n=index(line, ": phony "); name=substr(line,1,n-1); path=substr(line,n+8)
+      if (path in exe) print name
+    }
+  ' "$builddir/build.ninja" | \
+    grep -vE '^\.|^CMakeFiles|/|^_|^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
+}
+
 # List available build targets for a preset
 _cmc__list_targets() {
   local preset="$1" info builddir
@@ -89,7 +109,7 @@ _cmc__list_targets() {
   # Try ninja first
   if [[ -n "$builddir" && -f "$builddir/build.ninja" && -n ${commands[ninja]} ]]; then
     ninja -C "$builddir" -t targets 2>/dev/null | \
-      sed -n 's/^\([^:][^:]*\):.*/\1/p' | \
+      sed -n 's/: phony$//p' | \
       grep -vE '^\.|^CMakeFiles|/|^_|^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
     return 0
   fi
@@ -97,7 +117,7 @@ _cmc__list_targets() {
   # Try make
   if [[ -n "$builddir" && -f "$builddir/Makefile" && -n ${commands[make]} ]]; then
     make -C "$builddir" help 2>/dev/null | \
-      sed -n 's/^\([A-Za-z0-9_-][A-Za-z0-9_-]*\):.*/\1/p' | \
+      sed -n 's/^\.\.\.  *\([A-Za-z0-9_-][A-Za-z0-9_-]*\).*/\1/p' | \
       grep -vE '^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
     return 0
   fi
@@ -105,16 +125,16 @@ _cmc__list_targets() {
   # Fallback to cmake with preset
   if [[ -n ${commands[cmake]} && -n "$preset" ]]; then
     cmake --build --preset "$preset" --target help 2>/dev/null | \
-      sed -n 's/^\([A-Za-z0-9_-][A-Za-z0-9_-]*\):.*/\1/p' | \
-      grep -vE '^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
+      sed -n -e 's/^\([^:][^:]*\):.*/\1/p' -e 's/^\.\.\.  *\([A-Za-z0-9_-][A-Za-z0-9_-]*\).*/\1/p' | \
+      grep -vE '^\.|^CMakeFiles|/|^_|^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
     return 0
   fi
-  
+
   # Last resort: cmake with build directory
   if [[ -n "$builddir" && -n ${commands[cmake]} ]]; then
     cmake --build "$builddir" --target help 2>/dev/null | \
-      sed -n 's/^\([A-Za-z0-9_-][A-Za-z0-9_-]*\):.*/\1/p' | \
-      grep -vE '^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
+      sed -n -e 's/^\([^:][^:]*\):.*/\1/p' -e 's/^\.\.\.  *\([A-Za-z0-9_-][A-Za-z0-9_-]*\).*/\1/p' | \
+      grep -vE '^\.|^CMakeFiles|/|^_|^(all|clean|install|test|help|depend|edit_cache|rebuild_cache)$'
   fi
 }
 
@@ -125,21 +145,34 @@ _cmc__resolve_target_path() {
   builddir="${info%%|*}"
   config="${info#*|}"
   [[ -z "$builddir" ]] && return 1
-  
+
+  # Ask ninja for the real output path behind the phony target
+  if [[ -f "$builddir/build.ninja" && -n ${commands[ninja]} ]]; then
+    local relpath
+    relpath="$(sed -n "s/^build ${target}: phony //p" "$builddir/build.ninja")"
+    if [[ -n "$relpath" ]]; then
+      local exe="$builddir/$relpath"
+      # Handle macOS .app bundles
+      if [[ "$exe" == *.app ]]; then
+        exe="$exe/Contents/MacOS/$target"
+      fi
+      [[ -x "$exe" ]] && { print -r -- "$exe"; return 0; }
+    fi
+  fi
+
+  # Static candidates for multi-config generators (e.g. Xcode, VS)
   local -a candidates=()
   if [[ -n "$config" ]]; then
     candidates+=(
-      "$builddir/$config/$target/$target"
       "$builddir/$config/$target"
       "$builddir/$config/$target.app/Contents/MacOS/$target"
     )
   fi
   candidates+=(
-    "$builddir/$target/$target"
     "$builddir/$target"
     "$builddir/$target.app/Contents/MacOS/$target"
   )
-  
+
   local cand
   for cand in "${candidates[@]}"; do
     [[ -x "$cand" ]] && { print -r -- "$cand"; return 0; }
@@ -256,9 +289,9 @@ _cmr_complete() {
     targets)
       local preset
       preset="$(_cmc__resolve_preset build "$words[2]")" || return 1
-      local -a targets=(${(f)"$(_cmc__list_targets "$preset")"})
+      local -a targets=(${(f)"$(_cmc__list_executable_targets "$preset")"})
       local -a matches=(${(f)"$(_cmc__fuzzy_filter "$PREFIX" "${targets[@]}")"})
-      (( ${#matches[@]} > 0 )) && _describe 'build target' matches
+      (( ${#matches[@]} > 0 )) && _describe 'executable target' matches
       ;;
     args)
       _files
@@ -271,5 +304,5 @@ if (( $+functions[compdef] )); then
   compdef _cmc_complete _cmc
   compdef _cmb_complete _cmb
   compdef _cmr_complete _cmr
-  compdef _cmbr_complete _cmbr
+  compdef _cmr_complete _cmbr
 fi

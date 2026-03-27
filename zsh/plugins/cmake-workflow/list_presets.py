@@ -19,7 +19,7 @@ def list_presets(base_dir, kind):
             continue
         for preset in data.get(key, []):
             name = preset.get("name")
-            if name and name not in names:
+            if name and name not in names and not preset.get("hidden", False):
                 names.append(name)
     
     return names
