@@ -95,13 +95,13 @@ def get_build_info(base_dir, preset_name):
         if not os.path.isabs(binary_dir):
             binary_dir = os.path.abspath(os.path.join(base_dir, binary_dir))
     
-    return binary_dir, configuration
+    return binary_dir, configuration, config_name or ""
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         sys.exit(1)
-    
+
     base_dir = sys.argv[1]
     preset_name = sys.argv[2]
-    binary_dir, configuration = get_build_info(base_dir, preset_name)
-    sys.stdout.write(f"{binary_dir}|{configuration}")
+    binary_dir, configuration, configure_preset = get_build_info(base_dir, preset_name)
+    sys.stdout.write(f"{binary_dir}|{configuration}|{configure_preset}")

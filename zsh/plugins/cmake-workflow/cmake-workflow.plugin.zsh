@@ -138,12 +138,28 @@ _cmc__list_targets() {
   fi
 }
 
+# Check if build dir is configured; if not, run the configure step
+_cmc__ensure_configured() {
+  local preset="$1" info builddir configure_preset
+  info="$(_cmc__build_info "$preset")" || return 1
+  builddir="${info%%|*}"
+  configure_preset="${info##*|}"
+  if [[ -z "$builddir" || ! -f "$builddir/CMakeCache.txt" ]]; then
+    if [[ -z "$configure_preset" ]]; then
+      print -u2 "cmake: cannot determine configure preset for build preset '$preset'"
+      return 1
+    fi
+    print -u2 "cmake: build directory not configured, running: cmake --preset $configure_preset"
+    cmake --preset "$configure_preset" || return 1
+  fi
+}
+
 # Find executable path for a target
 _cmc__resolve_target_path() {
   local preset="$1" target="$2" info builddir config
   info="$(_cmc__build_info "$preset")" || return 1
   builddir="${info%%|*}"
-  config="${info#*|}"
+  config="${${info#*|}%%|*}"
   [[ -z "$builddir" ]] && return 1
 
   # Ask ninja for the real output path behind the phony target
@@ -199,7 +215,8 @@ _cmb() {
     print -u2 "cmake build: unknown preset '$1'"
     return 1
   }
-  
+  _cmc__ensure_configured "$preset" || return 1
+
   if [[ -n "$2" ]]; then
     target="$(_cmc__resolve_target "$preset" "$2")" || {
       print -u2 "cmake build: unknown target '$2'"
@@ -219,6 +236,7 @@ _cmr() {
     print -u2 "cmake run: unknown preset '$1'"
     return 1
   }
+  _cmc__ensure_configured "$preset" || return 1
   target="$(_cmc__resolve_target "$preset" "$2")" || {
     print -u2 "cmake run: unknown target '$2'"
     return 1
@@ -238,6 +256,7 @@ _cmbr() {
     print -u2 "cmake build/run: unknown preset '$1'"
     return 1
   }
+  _cmc__ensure_configured "$preset" || return 1
   target="$(_cmc__resolve_target "$preset" "$2")" || {
     print -u2 "cmake build/run: unknown target '$2'"
     return 1
