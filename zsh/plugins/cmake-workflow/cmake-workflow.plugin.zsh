@@ -149,7 +149,8 @@ _cmc__ensure_configured() {
       print -u2 "cmake: cannot determine configure preset for build preset '$preset'"
       return 1
     fi
-    print -u2 "cmake: build directory not configured, running: cmake --preset $configure_preset"
+    print -u2 "cmake: build directory not configured, auto-configuring"
+    print -u2 ">> cmake --preset $configure_preset"
     cmake --preset "$configure_preset" || return 1
   fi
 }
@@ -163,16 +164,27 @@ _cmc__resolve_target_path() {
   [[ -z "$builddir" ]] && return 1
 
   # Ask ninja for the real output path behind the phony target
-  if [[ -f "$builddir/build.ninja" && -n ${commands[ninja]} ]]; then
-    local relpath
-    relpath="$(sed -n "s/^build ${target}: phony //p" "$builddir/build.ninja")"
-    if [[ -n "$relpath" ]]; then
-      local exe="$builddir/$relpath"
-      # Handle macOS .app bundles
-      if [[ "$exe" == *.app ]]; then
-        exe="$exe/Contents/MacOS/$target"
+  # For multi-config generators (Ninja Multi-Config), use the config-specific
+  # ninja file (build-<Config>.ninja) instead of build.ninja which only has the
+  # default config.
+  if [[ -n ${commands[ninja]} ]]; then
+    local ninja_file=""
+    if [[ -n "$config" && -f "$builddir/build-${config}.ninja" ]]; then
+      ninja_file="$builddir/build-${config}.ninja"
+    elif [[ -f "$builddir/build.ninja" ]]; then
+      ninja_file="$builddir/build.ninja"
+    fi
+    if [[ -n "$ninja_file" ]]; then
+      local relpath
+      relpath="$(sed -n "s/^build ${target}: phony //p" "$ninja_file")"
+      if [[ -n "$relpath" ]]; then
+        local exe="$builddir/$relpath"
+        # Handle macOS .app bundles
+        if [[ "$exe" == *.app ]]; then
+          exe="$exe/Contents/MacOS/$target"
+        fi
+        [[ -x "$exe" ]] && { print -r -- "$exe"; return 0; }
       fi
-      [[ -x "$exe" ]] && { print -r -- "$exe"; return 0; }
     fi
   fi
 
@@ -183,11 +195,12 @@ _cmc__resolve_target_path() {
       "$builddir/$config/$target"
       "$builddir/$config/$target.app/Contents/MacOS/$target"
     )
+  else
+    candidates+=(
+      "$builddir/$target"
+      "$builddir/$target.app/Contents/MacOS/$target"
+    )
   fi
-  candidates+=(
-    "$builddir/$target"
-    "$builddir/$target.app/Contents/MacOS/$target"
-  )
 
   local cand
   for cand in "${candidates[@]}"; do
@@ -204,6 +217,7 @@ _cmc() {
     print -u2 "cmake configure: unknown preset '$1'"
     return 1
   }
+  print -u2 ">> cmake --preset $preset"
   cmake --preset "$preset"
 }
 
@@ -222,8 +236,10 @@ _cmb() {
       print -u2 "cmake build: unknown target '$2'"
       return 1
     }
+    print -u2 ">> cmake --build --preset $preset --target $target ${@:3}"
     cmake --build --preset "$preset" --target "$target" ${@:3}
   else
+    print -u2 ">> cmake --build --preset $preset ${@:2}"
     cmake --build --preset "$preset" ${@:2}
   fi
 }
@@ -245,6 +261,7 @@ _cmr() {
     print -u2 "cmake run: cannot find executable for target '$target'"
     return 1
   }
+  print -u2 ">> $exe ${@:3}"
   "$exe" "${@:3}"
 }
 
