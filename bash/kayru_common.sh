@@ -9,11 +9,24 @@ function parse_git_branch {
   echo "("${ref#refs/heads/}") "
 }
 
+# Over SSH, user@host gets a bold per-host colour (see zsh/zshrc, which must match)
+HOST_STYLE="32"
+if [ -n "$SSH_CONNECTION" ]; then
+  if [ -z "$CONFIGS_HOST_COLOR" ]; then
+    host_palette=(167 173 179 107 73 110 140 175)
+    host_crc="$(printf %s "${HOSTNAME%%.*}" | cksum)"
+    CONFIGS_HOST_COLOR=${host_palette[$(( ${host_crc%% *} % ${#host_palette[@]} ))]}
+    unset host_palette host_crc
+  fi
+  HOST_STYLE="1;38;5;$CONFIGS_HOST_COLOR"
+fi
+
 if [ "$UNAME" == "FreeBSD" ]; then
 	PS1="\u@\h \w $ "
 else
-	PS1="\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$ "
+	PS1="\[\e[${HOST_STYLE}m\]\u@\h\[\e[0m\] \[\e[33m\]\w\[\e[0m\] \$(parse_git_branch)\$ "
 fi
+unset HOST_STYLE
 
 # make ls nicer
 

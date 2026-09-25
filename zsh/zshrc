@@ -40,6 +40,23 @@ plugins+=(zsh-syntax-highlighting history-substring-search)
 
 source $ZSH/oh-my-zsh.sh
 
+# Over SSH, tint af-magic's separator line and user@host with a per-host colour. Derived from the
+# hostname so no hostnames live in this public repo; a machine can set CONFIGS_HOST_COLOR=<0-255>
+# in its ~/.zshrc before sourcing this file. Must match bash/kayru_common.sh.
+if [[ -n "$SSH_CONNECTION" && "$ZSH_THEME" == af-magic ]]; then
+  if [[ -z "$CONFIGS_HOST_COLOR" ]]; then
+    _palette=(167 173 179 107 73 110 140 175)
+    _crc="$(printf %s "${HOST%%.*}" | cksum)"
+    CONFIGS_HOST_COLOR=${_palette[$(( ${_crc%% *} % ${#_palette} + 1 ))]}
+    unset _palette _crc
+  fi
+  # Not ${FG[n]}: its keys are zero-padded ("073")
+  _host_fg="%{"$'\e'"[38;5;${CONFIGS_HOST_COLOR}m%}"
+  PS1="${PS1/"${FG[237]}"/$_host_fg}"
+  RPS1="${RPS1/"${FG[237]}%n@%m"/%B$_host_fg%n@%m%b}"
+  unset _host_fg
+fi
+
 PATH=~/bin:$PATH
 export PATH
 
