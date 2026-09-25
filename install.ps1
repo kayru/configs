@@ -138,7 +138,26 @@ function Add-LineToFile([string]$File, [string]$Line) {
     [IO.File]::AppendAllText($File, "$prefix$Line`n", $Utf8NoBom)
 }
 
+# A real directory holding only empty directories, e.g. the ~\vimfiles skeleton the Vim installer creates.
+# Reparse points disqualify it: Remove-Item -Recurse on 5.1 follows junctions and deletes their targets.
+function Test-EmptyDirTree([string]$Path) {
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+    if (-not $item -or -not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        return $false
+    }
+    foreach ($child in Get-ChildItem -LiteralPath $Path -Recurse -Force) {
+        if (-not $child.PSIsContainer -or ($child.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            return $false
+        }
+    }
+    return $true
+}
+
 function New-Junction([string]$Target, [string]$Link) {
+    # Checked again here: a package installed earlier in this run may have created it
+    if (Test-EmptyDirTree $Link) {
+        Remove-Item -LiteralPath $Link -Recurse -Force
+    }
     New-Item -ItemType Junction -Path $Link -Target $Target | Out-Null
 }
 
@@ -207,6 +226,8 @@ function Register-Junction([string]$Target, [string]$Link) {
     $linkTarget = @($item.Target) | Select-Object -First 1
     if ($item.LinkType -in 'Junction', 'SymbolicLink' -and $linkTarget -and (Test-SamePath $linkTarget $Target)) {
         $DoneItems.Add("$(Format-Display $Link) -> $(Format-Display $Target)")
+    } elseif (Test-EmptyDirTree $Link) {
+        Add-Step "Replace empty $(Format-Display $Link) (folders only, no files) with junction -> $(Format-Display $Target)" 'New-Junction' @($Target, $Link)
     } else {
         $Notes.Add("$(Format-Display $Link) exists and is not a link to $(Format-Display $Target); move it aside and re-run")
     }
