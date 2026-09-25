@@ -11,3 +11,5 @@ BoldAsColour=yes
 FontSmoothing=default
 Transparency=off
 OpaqueWhenFocused=no
+Locale=en_GB
+Charset=UTF-8

@@ -168,8 +168,24 @@ function Install-WingetPackages([string[]]$Ids) {
     $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 }
 
+# Launching with -ExecutionPolicy sets PSExecutionPolicyPreference, which child PowerShells inherit as
+# a Process-scope override: it would mask the real policy and make Set-ExecutionPolicy report failure
+function Invoke-WithoutPolicyOverride([scriptblock]$Body) {
+    $saved = $env:PSExecutionPolicyPreference
+    Remove-Item Env:PSExecutionPolicyPreference -ErrorAction SilentlyContinue
+    try {
+        & $Body
+    } finally {
+        if ($null -ne $saved) {
+            $env:PSExecutionPolicyPreference = $saved
+        }
+    }
+}
+
 function Set-UserExecutionPolicy([string]$Exe) {
-    Invoke-Checked $Exe @('-NoProfile', '-NonInteractive', '-Command', 'Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force')
+    Invoke-WithoutPolicyOverride {
+        Invoke-Checked $Exe @('-NoProfile', '-NonInteractive', '-Command', 'Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force')
+    }
 }
 
 # ---- planning helpers (read-only)
@@ -257,7 +273,9 @@ foreach ($ps in $PowerShells) {
     if (-not (Test-Command $ps.Exe)) {
         continue
     }
-    $policy = (Invoke-Quiet $ps.Exe @('-NoProfile', '-NonInteractive', '-Command', 'Get-ExecutionPolicy') | Select-Object -Last 1)
+    $policy = Invoke-WithoutPolicyOverride {
+        Invoke-Quiet $ps.Exe @('-NoProfile', '-NonInteractive', '-Command', 'Get-ExecutionPolicy') | Select-Object -Last 1
+    }
     $policy = "$policy".Trim()
     if ($policy -in 'Restricted', 'AllSigned', 'Undefined') {
         Add-Step "$($ps.Name): Set-ExecutionPolicy -Scope CurrentUser RemoteSigned (currently $policy)" 'Set-UserExecutionPolicy' @($ps.Exe)
