@@ -158,6 +158,8 @@ do_chsh() {
     echo "skipped: no zsh listed in /etc/shells"
   elif ! command -v chsh > /dev/null; then
     echo "skipped: chsh not available"
+  elif [[ "$1" == sudo ]]; then
+    as_root chsh -s "$zsh_path" "$(id -un)"
   else
     chsh -s "$zsh_path"
   fi
@@ -389,7 +391,16 @@ else
   elif [[ -z "$zsh_path" && "$ZSH_PLANNED" == no ]]; then
     note "login shell unchanged: no zsh listed in /etc/shells"
   else
-    plan "Change login shell from $current_shell to ${zsh_path:-zsh} (chsh, asks for password)" do_chsh
+    # chsh authenticates with the account password; cloud images (e.g. EC2 ubuntu) lock it
+    password_state=""
+    if [[ "$OS" != Darwin ]]; then
+      password_state="$(passwd -S "$(id -un)" 2> /dev/null | awk '{print $2}' || true)"
+    fi
+    if [[ "$password_state" == L || "$password_state" == NP ]]; then
+      plan "Change login shell from $current_shell to ${zsh_path:-zsh} (sudo chsh: account has no usable password)" do_chsh sudo
+    else
+      plan "Change login shell from $current_shell to ${zsh_path:-zsh} (chsh, asks for password)" do_chsh
+    fi
   fi
 fi
 
