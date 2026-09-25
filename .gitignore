@@ -1,2 +1,12 @@
-vim/.netrwhist
+.DS_Store
+.claude/settings.local.json
 
+# ~/.vim is symlinked here; keep vim's runtime state out
+vim/.netrwhist
+vim/viminfo
+vim/undo/
+vim/view/
+vim/swap/
+vim/backup/
+*.swp
+*.swo

@@ -11,3 +11,7 @@
 
 [fetch]
 	recurseSubmodules = true
+[init]
+	defaultBranch = main
+[push]
+	autoSetupRemote = true
