@@ -24,3 +24,7 @@ function prompt {
     $gitPart = if ($branch) { " $esc[36m($branch)$esc[0m" } else { '' }
     "$esc[33m$location$esc[0m$gitPart`n> "
 }
+
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& { (zoxide init powershell | Out-String) })
+}

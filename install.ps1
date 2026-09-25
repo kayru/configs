@@ -217,6 +217,8 @@ $Packages = @(
     @{ Id = 'BurntSushi.ripgrep.MSVC' },
     @{ Id = 'sharkdp.fd' },
     @{ Id = 'jqlang.jq' },
+    @{ Id = 'junegunn.fzf' },
+    @{ Id = 'ajeetdsouza.zoxide' },
     @{ Id = 'vim.vim' }
 )
 

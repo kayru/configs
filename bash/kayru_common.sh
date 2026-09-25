@@ -44,3 +44,16 @@ complete -W "$(echo $(grep -s '^ssh ' ~/.bash_history | sort -u | sed 's/^ssh //
 
 # Auto-complete premake
 complete -W "xcode4 vs2010 gmake clean" premake4
+
+# fzf: Ctrl-R/Ctrl-T/Alt-C; zoxide: z
+if command -v fzf > /dev/null; then
+  # --bash needs fzf 0.48+; older Debian/Ubuntu packages ship the script instead
+  if fzf --bash > /dev/null 2>&1; then
+    eval "$(fzf --bash)"
+  elif [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+    . /usr/share/doc/fzf/examples/key-bindings.bash
+  fi
+fi
+if command -v zoxide > /dev/null; then
+  eval "$(zoxide init bash)"
+fi

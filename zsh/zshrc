@@ -2,16 +2,41 @@ CONFIGS_DIR="${${(%):-%x}:A:h:h}"
 
 ZSH=$HOME/.oh-my-zsh
 ZSH_THEME="af-magic"
+zstyle ':omz:update' mode auto
 
 # Must precede oh-my-zsh: its brew plugin picks up Intel brew in /usr/local otherwise
 if [[ "$OSTYPE" == darwin* && -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 fi
 
-plugins=(git brew extract virtualenv rust zsh-completions)
+# Debian/Ubuntu package fd as fdfind
+if (( $+commands[fd] )); then
+  _fd=fd
+elif (( $+commands[fdfind] )); then
+  _fd=fdfind
+  alias fd=fdfind
+fi
+if [[ -n "$_fd" ]]; then
+  export FZF_DEFAULT_COMMAND="$_fd --type f --hidden --exclude .git"
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND="$_fd --type d --hidden --exclude .git"
+fi
+unset _fd
+
+plugins=(git brew extract virtualenv rust zsh-completions sudo colored-man-pages zsh-autosuggestions)
 if [[ "$OSTYPE" == darwin* ]]; then
   plugins+=(macos)
 fi
+# Both plugins complain on every start when their binary is missing. Pre-0.48 fzf (Ubuntu 22.04)
+# has no --zsh and relies on /usr/share/doc, which minimized Ubuntu installs strip.
+if (( $+commands[fzf] )) && { fzf --zsh > /dev/null 2>&1 || [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] }; then
+  plugins+=(fzf)
+fi
+if (( $+commands[zoxide] )); then
+  plugins+=(zoxide)
+fi
+# syntax-highlighting wraps widgets defined before it; substring-search must come after it
+plugins+=(zsh-syntax-highlighting history-substring-search)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -30,14 +55,5 @@ fi
 alias l='ls -CF'
 alias la='ls -A'
 alias ll='ls -alhF'
-
-# Debian/Ubuntu package fd as fdfind
-if (( ! $+commands[fd] && $+commands[fdfind] )); then
-  alias fd=fdfind
-fi
-
-DISABLE_UPDATE_PROMPT=true
-
-autoload -U compinit && compinit
 
 source "$CONFIGS_DIR/zsh/plugins/cmake-workflow/cmake-workflow.plugin.zsh"

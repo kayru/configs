@@ -248,7 +248,7 @@ is_installed() {
 # ---- plan
 
 PLATFORM="$(platform)"
-PKGS_COMMON=(cmake ripgrep jq htop tmux mc)
+PKGS_COMMON=(cmake ripgrep jq htop tmux mc fzf zoxide)
 case "$PLATFORM" in
   # git, vim and zsh ship with macOS
   macos) PKGS=("${PKGS_COMMON[@]}" coreutils python ninja fd) ;;
