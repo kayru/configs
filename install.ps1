@@ -366,6 +366,8 @@ if ((Test-Path -LiteralPath $GitBash) -or $GitPlanned) {
     Register-Junction $VimDir (Join-Path $UserHome '.vim')
     Register-Line (Join-Path $UserHome '.vimrc') 'source ~/.vim/kayru.vim'
     $bashRc = Join-Path $UserHome '.bashrc'
+    # Git Bash warns on every start about a ~/.bashrc without a ~/.bash_profile; same line Git writes
+    Register-Line (Join-Path $UserHome '.bash_profile') 'test -f ~/.bashrc && . ~/.bashrc'
     Register-Line $bashRc "source $(ConvertTo-BashPath (Join-Path $Repo 'bash\kayru_common.sh'))"
     Register-Line $bashRc "source $(ConvertTo-BashPath (Join-Path $Repo 'bash\dir_colors.sh'))"
     Register-Copy (Join-Path $Repo '.minttyrc') (Join-Path $UserHome '.minttyrc')
