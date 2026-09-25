@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Visual Studio exports, kept byte-for-byte
+*.vssettings -text

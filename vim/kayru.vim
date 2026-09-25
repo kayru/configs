@@ -1,4 +1,5 @@
-source ~/.vim/bundle/pathogen/autoload/pathogen.vim
+" Relative to this file: the runtime dir is ~/.vim on Unix, ~/vimfiles on Windows
+execute 'source ' . fnameescape(expand('<sfile>:p:h') . '/bundle/pathogen/autoload/pathogen.vim')
 call pathogen#infect()
 
 " colour mode

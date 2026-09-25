@@ -31,6 +31,11 @@ alias l='ls -CF'
 alias la='ls -A'
 alias ll='ls -alhF'
 
+# Debian/Ubuntu package fd as fdfind
+if (( ! $+commands[fd] && $+commands[fdfind] )); then
+  alias fd=fdfind
+fi
+
 DISABLE_UPDATE_PROMPT=true
 
 autoload -U compinit && compinit
